@@ -36,7 +36,7 @@ const itinerary = (tree, start, end) => {
   return concat(arr1DifRev, [interStation], arr2Dif);
 };
 
-const tourId = parseUrlQuery("tour") === "" ? "5973" : parseUrlQuery("tour");
+const tourId = parseUrlQuery("tour") === "" ? "6099" : parseUrlQuery("tour");
 
 const points = [
   { name: "Москва (СРВ)", latitude: 55.850701, longitude: 37.465197 },
@@ -408,80 +408,81 @@ const mapTree = [
   ]
 ];
 
-// const itinerary = (tree, start, end) => {
-//   const iter = (n, search, p, acc) => {
-//     const [city, children] = n;
-//     if (city === search) {
-//       return [...p, city];
-//     }
-//     if (!children) {
-//       return acc;
-//     }
-//     return _.reduce(children, (cAcc, nn) => iter(nn, search, [...p, city], cAcc), acc);
-//   };
-//   const arr1 = iter(tree, start, [], []);
-//   const arr2 = iter(tree, end, [], []);
-//   const interArr = _.intersection(arr1, arr2);
-//   const interStation = interArr[interArr.length - 1];
-//   const arr1DifRev = _.reverse(_.difference(arr1, arr2));
-//   const arr2Dif = _.difference(arr2, arr1);
-//   return _.concat(arr1DifRev, [interStation], arr2Dif);
-// };
-
-const pricesURL =
+const toursURL =
   "https://api.mosturflot.ru/v3/rivercruises/tours/" +
   tourId +
   "?fields[tours]=route";
 
-fetch(pricesURL)
+fetch(toursURL)
   .then(response => {
     return response.json();
   })
   .then(data => {
     const route = data.data.attributes["route"].split(" - ");
-    findMapPoints(route);
+    loadCitiesData(route);
   });
 
-function findMapPoints(data) {
+function loadCitiesData(route) {
+  fetch("assets/js/points.json")
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      findCitiesData(data, route);
+    });
+}
+
+function findCitiesData(data, route) {
+  let tmp = [];
+  let unique = [];
+  data.data.map(city => {
+    route.map((station, i) => {
+      let ex = {};
+      if (station.indexOf(city.attributes.name) > -1) {
+        ex["name"] = station;
+        ex["id"] = city.id;
+        ex["description"] =
+          city.attributes.description === null
+            ? ""
+            : city.attributes.description; //.replace(/(<([^>]+)>)/gi, "");
+        if (unique.indexOf(station) === -1) {
+          unique.push(station);
+          tmp.push(ex);
+        }
+      }
+    });
+  });
+  findMapPoints(route, tmp);
+}
+
+function findMapPoints(data, cities) {
   const tourPoints = [];
   const realPoints = [];
-  const realRoute = [];
   const realRoutePoints = [];
+  const citiesLatLng = [];
   data.map(function(point, index) {
     if (point) {
       points.map(function(pt, i) {
         if (point.indexOf(pt.name) > -1) {
+          cities.forEach(city => {
+            if (city.name.indexOf(pt.name) > -1) {
+              city["latlng"] = [pt.latitude, pt.longitude];
+              citiesLatLng.push(city);
+            }
+          });
           tourPoints[i] = [pt.latitude, pt.longitude];
           realPoints[i] = pt;
         }
       });
     }
     if (data.length === index + 1) {
-      const realPointsClean = [];
-      realPoints.forEach(el => {
-        if (el) {
-          realPointsClean.push(el);
-        }
-      });
-      //console.log(realPointsClean[0].name);
-      const latlng = [];
-      const line = [];
+      const realPointsClean = normalizeArr(realPoints);
       const clean = [];
-      realPointsClean.forEach((a, i) => {
+      realPointsClean.forEach(a => {
         const arr2 = itinerary(mapTree, realPointsClean[0].name, a.name);
         const dif = _.difference(arr2, clean);
-        //console.log(dif);
-        // if (dif.length === 0) {
-        //   clean.push(arr2);
-        // } else {
         clean.push(...dif);
-        //}
       });
-      // realPoints.sort(function(a, b) {
-      //   realRoute.push(...itinerary(mapTree, b.name, a.name));
-      //   return 1;
-      // });
-      //console.log(clean);
       clean.map(function(p, x) {
         if (p) {
           points.map(function(st) {
@@ -491,32 +492,27 @@ function findMapPoints(data) {
           });
         }
         if (clean.length === x + 1) {
-          realRoutePoints.forEach(el => {
-            if (el) {
-              line.push(el);
-            }
-          });
-
-          tourPoints.forEach(el => {
-            if (el) {
-              latlng.push(el);
-            }
-          });
-          renderRouteMap(line, latlng);
+          const line = normalizeArr(realRoutePoints);
+          const latlng = normalizeArr(tourPoints);
+          renderRouteMap(line, latlng, citiesLatLng);
         }
       });
-
-      // tourPoints.forEach((el) => {
-      //   if (el) {
-      //     latlng.push(el);
-      //   }
-      // });
-      //renderRouteMap(latlng);
     }
   });
 }
 
-function renderRouteMap(line, locations) {
+function normalizeArr(arr) {
+  const arrN = [];
+  arr.forEach(el => {
+    if (el) {
+      arrN.push(el);
+    }
+  });
+  return arrN;
+}
+
+function renderRouteMap(line, locations, cities) {
+  console.log(cities);
   const map = L.map("map").setView([55.850701, 37.465197], 10);
   L.polyline(line, { color: "#00ffff" }).addTo(map);
   L.tileLayer(
@@ -528,24 +524,32 @@ function renderRouteMap(line, locations) {
       updateWhenIdle: false
     }
   ).addTo(map);
-  // L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-  //   attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-  //   maxZoom: 18,
-  //   id: 'mapbox/streets-v11',
-  //   tileSize: 512,
-  //   zoomOffset: -1,
-  //   accessToken: 'pk.eyJ1IjoieDNibGlzIiwiYSI6ImNrZnhobzZ5MjFxeXcydXN2OW9rdmxxZWwifQ.93izT7JWWMcoigi9VEoUNg'
-  // }).addTo(map);
   map.options.crs = L.CRS.EPSG3395;
   L.Icon.Default.imagePath = "assets/lib/images/";
 
   let mapPoints = [];
-  locations.forEach(el => {
-    mapPoints.push([el[0], el[1]]);
-    L.marker([el[0], el[1]]).addTo(map);
+  // locations.forEach(el => {
+  //   mapPoints.push([el[0], el[1]]);
+  //   L.marker([el[0], el[1]]).addTo(map);
+  //   map.fitBounds(mapPoints);
+  // });
+
+  cities.forEach(el => {
+    mapPoints.push(el.latlng);
+    let html =
+      "<b>" +
+      el.name +
+      "</b><br>" +
+      '<img src="./assets/img/mtf/st/' +
+      el.id +
+      '.jpg" style="width: 250px;">' +
+      '<div style="height: 200px; overflow-y: scroll;">' +
+      el.description +
+      "</div>";
+
+    L.marker(el.latlng)
+      .bindPopup(html)
+      .addTo(map);
     map.fitBounds(mapPoints);
   });
 }
-
-//let res = itinerary(mapTree, "Москва (СРВ)", "Соловецкие острова");
-//console.log(res);
