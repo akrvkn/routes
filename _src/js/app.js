@@ -515,7 +515,7 @@ function normalizeArr(arr) {
 }
 
 function renderRouteMap(line, locations, cities) {
-  const map = L.map("map").setView([55.850701, 37.465197], 10);
+  const map = L.map("map").setView([55.850701, 37.465197], 8);
   L.polyline(line, { color: "#00ffff" }).addTo(map);
   L.tileLayer(
     "https://vec{s}.maps.yandex.net/tiles?l=map&v=20.10.06-1&z={z}&x={x}&y={y}&scale=2&lang=ru_RU",
