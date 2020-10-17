@@ -459,7 +459,7 @@ function findCitiesData(data, route) {
 }
 
 function findMapPoints(data, cities) {
-  const tourPoints = [];
+  //const tourPoints = [];
   const realPoints = [];
   const realRoutePoints = [];
   const citiesLatLng = [];
@@ -473,7 +473,7 @@ function findMapPoints(data, cities) {
               citiesLatLng.push(city);
             }
           });
-          tourPoints[i] = [pt.latitude, pt.longitude];
+          //tourPoints[i] = [pt.latitude, pt.longitude];
           realPoints[i] = pt;
         }
       });
@@ -496,8 +496,8 @@ function findMapPoints(data, cities) {
         }
         if (clean.length === x + 1) {
           const line = normalizeArr(realRoutePoints);
-          const latlng = normalizeArr(tourPoints);
-          renderRouteMap(line, latlng, citiesLatLng);
+          //const latlng = normalizeArr(tourPoints);
+          renderRouteMap(line, citiesLatLng);
         }
       });
     }
@@ -514,7 +514,7 @@ function normalizeArr(arr) {
   return arrN;
 }
 
-function renderRouteMap(line, locations, cities) {
+function renderRouteMap(line, cities) {
   const map = L.map("map").setView([55.850701, 37.465197], 8);
   L.polyline(line, { color: "#00ffff" }).addTo(map);
   L.tileLayer(
