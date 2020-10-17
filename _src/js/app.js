@@ -36,8 +36,6 @@ const itinerary = (tree, start, end) => {
   return concat(arr1DifRev, [interStation], arr2Dif);
 };
 
-const tourId = parseUrlQuery("tour") === "" ? "6099" : parseUrlQuery("tour");
-
 const points = [
   { name: "Москва (СРВ)", latitude: 55.850701, longitude: 37.465197 },
   { name: "Лесное", latitude: 56.074284, longitude: 37.662723 },
@@ -408,19 +406,24 @@ const mapTree = [
   ]
 ];
 
-const toursURL =
-  "https://api.mosturflot.ru/v3/rivercruises/tours/" +
-  tourId +
-  "?fields[tours]=route";
+getData();
 
-fetch(toursURL)
-  .then(response => {
-    return response.json();
-  })
-  .then(data => {
-    const route = data.data.attributes["route"].split(" - ");
-    loadCitiesData(route);
-  });
+function getData() {
+  const tourId = parseUrlQuery("tour") === "" ? "6099" : parseUrlQuery("tour");
+  const toursURL =
+    "https://api.mosturflot.ru/v3/rivercruises/tours/" +
+    tourId +
+    "?fields[tours]=route";
+
+  fetch(toursURL)
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      const route = data.data.attributes["route"].split(" - ");
+      loadCitiesData(route);
+    });
+}
 
 function loadCitiesData(route) {
   fetch("assets/js/points.json")
@@ -436,7 +439,7 @@ function findCitiesData(data, route) {
   let tmp = [];
   let unique = [];
   data.data.map(city => {
-    route.map((station, i) => {
+    route.map(station => {
       let ex = {};
       if (station.indexOf(city.attributes.name) > -1) {
         ex["name"] = station;
@@ -512,7 +515,6 @@ function normalizeArr(arr) {
 }
 
 function renderRouteMap(line, locations, cities) {
-  console.log(cities);
   const map = L.map("map").setView([55.850701, 37.465197], 10);
   L.polyline(line, { color: "#00ffff" }).addTo(map);
   L.tileLayer(
@@ -540,7 +542,7 @@ function renderRouteMap(line, locations, cities) {
       "<b>" +
       el.name +
       "</b><br>" +
-      '<img src="./assets/img/mtf/st/' +
+      '<img alt="Стоянка" src="./assets/img/mtf/st/' +
       el.id +
       '.jpg" style="width: 250px;">' +
       '<div style="height: 200px; overflow-y: scroll;">' +
