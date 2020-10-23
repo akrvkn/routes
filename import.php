@@ -14,3 +14,5 @@ if($point['type'] == 'point-images') {
     file_put_contents('assets/img/mtf/st/'.$list[$point['id']].$mime, $image);
 }
 }
+
+?>
