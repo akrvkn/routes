@@ -1,5 +1,6 @@
 import { intersection, difference, reverse, concat } from "lodash";
 import * as L from "leaflet";
+import { MarkerClusterGroup } from "leaflet.markercluster/src";
 
 function parseUrlQuery(q) {
   let res = "";
@@ -405,24 +406,82 @@ const mapTree = [
     ]
   ]
 ];
-
+//https://www.mosturflot.ru/api/ajax/image.php?src=Rublev
 getData();
 
 function getData() {
-  const tourId = parseUrlQuery("tour") === "" ? "6099" : parseUrlQuery("tour");
-  const toursURL =
-    "https://api.mosturflot.ru/v3/rivercruises/tours/" +
-    tourId +
-    "?fields[tours]=route";
+  const tourId = parseUrlQuery("tour") === "" ? "" : parseUrlQuery("tour");
+  const online = parseUrlQuery("online");
+  console.log(tourId);
+  if (tourId !== "") {
+    const toursURL =
+      "https://api.mosturflot.ru/v3/rivercruises/tours/" +
+      tourId +
+      "?fields[tours]=route";
 
-  fetch(toursURL)
-    .then(response => {
-      return response.json();
-    })
-    .then(data => {
-      const route = data.data.attributes["route"].split(" - ");
-      loadCitiesData(route);
+    fetch(toursURL)
+      .then(response => {
+        return response.json();
+      })
+      .then(data => {
+        const route = data.data.attributes["route"].split(" - ");
+        loadCitiesData(route);
+      });
+  }
+  if (online === "1") {
+    const onlineURL = "https://www.superuser.su/services/online.php";
+    fetch(onlineURL)
+      .then(response => {
+        return response.json();
+      })
+      .then(data => {
+        renderOnlineMap(data);
+      });
+  }
+}
+
+function renderOnlineMap(ships) {
+  const map = L.map("map").setView([55.850701, 37.465197], 10);
+  L.tileLayer(
+    "https://vec{s}.maps.yandex.net/tiles?l=map&v=20.10.06-1&z={z}&x={x}&y={y}&scale=2&lang=ru_RU",
+    {
+      subdomains: ["01", "02", "03", "04"],
+      attribution: '<a href="https://yandex.ru" target="_blank">Яндекс</a>',
+      reuseTiles: true,
+      updateWhenIdle: false
+    }
+  ).addTo(map);
+  map.options.crs = L.CRS.EPSG3395;
+  const markers = new MarkerClusterGroup();
+  const markersList = [];
+  const shipIcon = L.icon({
+    iconUrl: "assets/img/mtf/marker-ship.png",
+    iconSize: [64, 64],
+    iconAnchor: [22, 64]
+  });
+
+  function populate(ships) {
+    ships.forEach(el => {
+      let html =
+        el.name +
+        "<br><a href='https://www.mosturflot.ru/api/ajax/image.php?src=" +
+        el.name +
+        "' target='_blank'>" +
+        '<img alt="Теплоход" src="https://www.mosturflot.ru/api/ajax/image.php?src=' +
+        el.name +
+        '" style="width: 250px;">' +
+        "</a>";
+      let m = new L.Marker([el.latitude, el.longitude], {
+        icon: shipIcon
+      }).bindPopup(html);
+      markersList.push([el.latitude, el.longitude]);
+      markers.addLayer(m);
     });
+    return false;
+  }
+  populate(ships);
+  map.addLayer(markers);
+  map.fitBounds(markersList, { padding: [40, 40] });
 }
 
 function loadCitiesData(route) {
@@ -529,12 +588,7 @@ function renderRouteMap(line, cities) {
   map.options.crs = L.CRS.EPSG3395;
   L.Icon.Default.imagePath = "assets/lib/images/";
 
-  let mapPoints = [];
-  // locations.forEach(el => {
-  //   mapPoints.push([el[0], el[1]]);
-  //   L.marker([el[0], el[1]]).addTo(map);
-  //   map.fitBounds(mapPoints);
-  // });
+  const mapPoints = [];
 
   cities.forEach(el => {
     mapPoints.push(el.latlng);
