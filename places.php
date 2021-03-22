@@ -22,6 +22,6 @@ foreach($points['data'] as $data){
     }
 }
 
-file_put_contents('assets/js/places.json', json_encode($places));
+file_put_contents('assets/js/places.json', json_encode($places, JSON_UNESCAPED_UNICODE));
 
 ?>
