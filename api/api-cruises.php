@@ -134,6 +134,6 @@ usort($table, function($a, $b){
     return $a['tourstart'] <=> $b['tourstart'];
 });
 
-file_put_contents('cruises.json', json_encode($table, JSON_UNESCAPED_UNICODE));
+file_put_contents('cruises.json', json_encode($table));
 
 ?>
