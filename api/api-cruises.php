@@ -67,7 +67,7 @@ foreach( $vodohodApi as $vdh_ship_cruise ){
     $table[$counter]['tourfinish'] = $vdh_ship_cruise['dateStop'];
     $table[$counter]['tourroute'] = $vdh_ship_cruise['name'];
     $table[$counter]['tourdays'] = $vdh_ship_cruise['days'];
-    $table[$counter]['tourminprice'] = $vdh_ship_cruise['priceMin'];
+    $table[$counter]['tourminprice'] = intval((float)$vdh_ship_cruise['priceMin']);
     //$table[$counter]['tourcabinsfree'] = $vdh_ship_cruise['availabilityCount'];
     $vdh_cruise_prices = json_decode(file_get_contents($vdh_prices.$vdh_ship_cruise['id']), true);
     //$vdh_price_list = [];
@@ -97,7 +97,7 @@ foreach( $firstPage['data'] as $pageData) {
         $table[$counter]['tourfinish'] = $pageData['dateEnd'];
         $table[$counter]['tourroute'] = $pageData['route'];
         $table[$counter]['tourdays'] = $pageData['days'];
-        $table[$counter]['tourminprice'] = (string)$pageData['min_price'];
+        $table[$counter]['tourminprice'] = (int)$pageData['min_price'];
         //$table[$counter]['tourcabinsfree'] = $pageData['freeCabins'];
         
         $counter++;
@@ -121,7 +121,7 @@ for($i=0; $i < $pages; $i++){
                     $table[$counter]['tourfinish'] = $pageData['dateEnd'];
                     $table[$counter]['tourroute'] = $pageData['route'];
                     $table[$counter]['tourdays'] = $pageData['days'];
-                    $table[$counter]['tourminprice'] = (string)$pageData['min_price'];
+                    $table[$counter]['tourminprice'] = (int)$pageData['min_price'];
                     //$table[$counter]['tourcabinsfree'] = $pageData['freeCabins'];
                     $counter++;
                 }
