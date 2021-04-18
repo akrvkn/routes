@@ -33,12 +33,12 @@ foreach($mtf_cruises['data'] as $key=>$val){
     $table[$counter]['company'] = 'mtf';
     $table[$counter]['shipid'] = $val['attributes']['ship-id'];
     $table[$counter]['shipname'] = $mtf_names[$val['attributes']['ship-id']];
-    $table[$counter]['tourid'] = $val['id'];
+    $table[$counter]['tourid'] = (int)$val['id'];
     $table[$counter]['tourstart'] = $val['attributes']['start'];
     $table[$counter]['tourfinish'] = $val['attributes']['finish'];
     $table[$counter]['tourroute'] = $val['attributes']['route'];
     $table[$counter]['tourdays'] = $val['attributes']['days'];
-    $table[$counter]['tourminprice'] = $val['attributes']['price-from'];
+    $table[$counter]['tourminprice'] = (int)$val['attributes']['price-from'];
     //$table[$counter]['tourcabinsfree'] = '';
 
     //$prices = [];
@@ -69,7 +69,7 @@ foreach( $vodohodApi as $vdh_ship_cruise ){
     $table[$counter]['tourdays'] = $vdh_ship_cruise['days'];
     $table[$counter]['tourminprice'] = intval((float)$vdh_ship_cruise['priceMin']);
     //$table[$counter]['tourcabinsfree'] = $vdh_ship_cruise['availabilityCount'];
-    $vdh_cruise_prices = json_decode(file_get_contents($vdh_prices.$vdh_ship_cruise['id']), true);
+    //$vdh_cruise_prices = json_decode(file_get_contents($vdh_prices.$vdh_ship_cruise['id']), true);
     //$vdh_price_list = [];
     //foreach($vdh_cruise_prices['tariffs'][0]['prices'] as $adult){
         //$vdh_price_list[trim(str_replace('*', '', $adult['rt_name']))] = $adult['price_value'];
