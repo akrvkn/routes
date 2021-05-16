@@ -67,7 +67,6 @@ foreach( $vodohodApi as $vdh_ship_cruise ){
         foreach($cruise_days as $day){
             $route .= $day['portName'].' - ';
         }
-
         $table[$counter]['company'] = 'vdh';
         $table[$counter]['shipid'] = $vdh_ship_cruise['motorshipId'];
         $table[$counter]['shipname'] = $vdh_ship_cruise['motorshipName'];
