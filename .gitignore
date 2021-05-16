@@ -9,3 +9,4 @@ _site
 yarn-error.log
 Gemfile.lock
 **/.DS_Store
+package-lock.json
