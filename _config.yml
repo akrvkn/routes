@@ -1,0 +1,13 @@
+title: "Карта маршрутов"
+
+include:
+  - _pages
+exclude:
+  - node_modules/
+  - package-lock.json
+  - package.json
+  - webpack.mix.js
+  - yarn.lock
+  - readme.md
+  - Gemfile
+  - Gemfile.lock

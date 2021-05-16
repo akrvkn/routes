@@ -1,3 +1,11 @@
 .idea/
 node_modules/
 yarn.lock
+.idea
+_site
+.sass-cache
+.jekyll-metadata
+.jekyll-cache
+yarn-error.log
+Gemfile.lock
+**/.DS_Store
