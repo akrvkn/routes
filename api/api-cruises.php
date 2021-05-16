@@ -56,29 +56,27 @@ foreach($mtf_cruises['data'] as $key=>$val){
 
 $vdh_prices = 'https://api.vodohod.com/json/v2/cruise-prices.php?pauth=v2-ba9fab12d2c4b8d005645d04492a7af7&cruise=';
 
+$vdh_days = 'https://api.vodohod.com/json/v2/cruise-days.php?pauth=v2-ba9fab12d2c4b8d005645d04492a7af7&cruise=';
+
 $vodohodApi = json_decode(file_get_contents('https://api.vodohod.com/json/v2/cruises.php?pauth=v2-ba9fab12d2c4b8d005645d04492a7af7'), true);
 foreach( $vodohodApi as $vdh_ship_cruise ){
-    //if(!in_array($vdh_ship_cruise['motorshipName'], $vdh_names)){
-        //$vdh_names[] = $vdh_ship_cruise['motorshipName'];
-    //}
+
     if( $today < $vdh_ship_cruise['dateStart']) {
+        $cruise_days = json_decode(file_get_contents($vdh_days.$vdh_ship_cruise['id']), true);
+        $route = '';
+        foreach($cruise_days as $day){
+            $route .= $day['portName'].' - ';
+        }
+
         $table[$counter]['company'] = 'vdh';
         $table[$counter]['shipid'] = $vdh_ship_cruise['motorshipId'];
         $table[$counter]['shipname'] = $vdh_ship_cruise['motorshipName'];
         $table[$counter]['tourid'] = $vdh_ship_cruise['id'];
         $table[$counter]['tourstart'] = $vdh_ship_cruise['dateStart'];
         $table[$counter]['tourfinish'] = $vdh_ship_cruise['dateStop'];
-        $table[$counter]['tourroute'] = $vdh_ship_cruise['name'];
+        $table[$counter]['tourroute'] = substr($route, 0, -3);
         $table[$counter]['tourdays'] = $vdh_ship_cruise['days'];
         $table[$counter]['tourminprice'] = intval((float)$vdh_ship_cruise['priceMin']);
-        //$table[$counter]['tourcabinsfree'] = $vdh_ship_cruise['availabilityCount'];
-        //$vdh_cruise_prices = json_decode(file_get_contents($vdh_prices.$vdh_ship_cruise['id']), true);
-        //$vdh_price_list = [];
-        //foreach($vdh_cruise_prices['tariffs'][0]['prices'] as $adult){
-            //$vdh_price_list[trim(str_replace('*', '', $adult['rt_name']))] = $adult['price_value'];
-        //}
-        //$table[$counter]['pricelist'] = $vdh_price_list;
-
         $counter++;
     }
 }
